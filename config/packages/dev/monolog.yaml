@@ -1,0 +1,28 @@
+monolog:
+    handlers:
+        main:
+            type: fingers_crossed
+            action_level: debug
+            handler: nested
+            excluded_404s:
+                # regex: exclude all 404 errors from the logs
+                - ^/
+        nested:
+            type: stream
+            path: "%kernel.logs_dir%/%kernel.environment%.log"
+            level: debug
+        console:
+            type:   console
+            level: debug
+            verbosity_levels:
+                VERBOSITY_NORMAL: ERROR
+            process_psr_3_messages: false
+            channels: ["!event", "!doctrine"]
+        swift:
+            type:       swift_mailer
+            from_email: "%env(MAILER_FROM)%"
+            to_email:   "%env(MAILER_TO)%"
+            subject:    Bot Net  - An Error Occurred!
+            level:      warning
+            formatter:  monolog.formatter.html
+            content_type: text/html

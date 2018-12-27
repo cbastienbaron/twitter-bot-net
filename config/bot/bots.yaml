@@ -1,0 +1,38 @@
+#  Bots definitions
+services:
+    app.bot.contest:
+        class: App\Bot\Contest
+        autowire: false
+        arguments:
+            - '@logger'
+            - # scans
+                search: '@app.bot.scan.contest'
+            - # apis
+                search: '@app.bot.api.search'
+                thanks: '@app.bot.api.thanks'
+                follow: '@app.bot.api.follow'
+                favorite: '@app.bot.api.favorite'
+                retweet: '@app.bot.api.retweet'
+                application: '@app.bot.api.application'
+                unfollow: '@app.bot.api.unfollow'
+            - # rules
+                retweet: '@app.bot.rule.retweet'
+                follow: '@app.bot.rule.follow'
+                favorite: '@app.bot.rule.favorite'
+                thanks: '@app.bot.rule.thanks'
+            - # healths checks
+                application: '@app.bot.health.application'
+                follows: '@app.bot.health.follows'
+
+    app.bot.watcher:
+        class: App\Bot\Watcher
+        autowire: false
+        arguments:
+            - '@logger'
+            - # scans
+                direct_message: '@app.bot.scan.direct_message'
+            - '@mailer'
+
+    # Aliases
+    App\Bot\Contest: '@app.bot.contest'
+    App\Bot\Watcher: '@app.bot.watcher'

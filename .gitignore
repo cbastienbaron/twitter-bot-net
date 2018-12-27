@@ -1,0 +1,12 @@
+.idea/
+###> symfony/framework-bundle ###
+/.env
+/public/bundles/
+/var/*
+/vendor/
+###< symfony/framework-bundle ###
+
+###> app bot ###
+!/var/data
+
+###< app bot ###

@@ -1,0 +1,202 @@
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+parameters:
+    twitter.api.url: https://api.twitter.com/1.1/
+    twitter.api.upload.url: https://upload.twitter.com/1.1/
+    giphy.api.url: https://api.giphy.com/v1/
+
+    twitter.api.config:
+        consumer_key: '%env(TWITTER_CONSUMER_KEY)%'
+        consumer_secret: '%env(TWITTER_CONSUMER_SECRET)%'
+        token: '%env(TWITTER_TOKEN)%'
+        token_secret: '%env(TWITTER_TOKEN_SECRET)%'
+
+    twitter.rule.follow:
+        - ' follow '
+        - ' follower '
+        - '🏆follow'
+        - 'follow me'
+        - '🚨follow us'
+
+    twitter.rule.favorite:
+        - ' fav '
+        - ' favorite '
+        - 'like'
+
+services:
+
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        public: false       # Allows optimizing the container by removing unused services; this also means
+                            # fetching services directly from the container via $container->get() won't work.
+                            # The best practice is to be explicit about your dependencies anyway
+    GuzzleHttp\HandlerStack: ~
+
+    # Client Request
+    app.bot.api.oauth:
+        class: GuzzleHttp\Subscriber\Oauth\Oauth1
+        autowire: false
+        arguments: ['%twitter.api.config%']
+
+    app.bot.api.handler_stack:
+        factory: GuzzleHttp\HandlerStack:create
+        autowire: false
+        class: GuzzleHttp\HandlerStack
+        calls:
+            - [ push, ['@app.bot.api.oauth'] ]
+
+    app.bot.api.client:
+        class: GuzzleHttp\Client
+        arguments:
+          - {base_uri: '%twitter.api.url%', handler: '@app.bot.api.handler_stack', auth: 'oauth'}
+
+    app.bot.api.upload.client:
+        class: GuzzleHttp\Client
+        arguments:
+          - {base_uri: '%twitter.api.upload.url%', handler: '@app.bot.api.handler_stack', auth: 'oauth'}
+
+    app.bot.api.giphy.client:
+        class: GuzzleHttp\Client
+        arguments:
+          - {base_uri: '%giphy.api.url%'}
+
+    # Filters
+    app.bot.loader.statuses:
+        class: App\Bot\Loader\File
+        arguments:
+            - '%kernel.project_dir%/var/data/ban_list'
+
+    app.bot.loader.follows:
+        class: App\Bot\Loader\File
+        arguments:
+            - '%kernel.project_dir%/var/data/follow'
+
+    app.bot.loader.keywords:
+        class: App\Bot\Loader\File
+        arguments:
+            - '%kernel.project_dir%/var/data/blacklist_keywords'
+
+    app.bot.loader.direct_message:
+        class: App\Bot\Loader\File
+        arguments:
+            - '%kernel.project_dir%/var/data/direct_message'
+
+    app.bot.filter.statuses:
+        class: App\Bot\Filter\Statuses
+        arguments:
+            - '@app.bot.loader.statuses'
+
+    app.bot.filter.follows:
+        class: App\Bot\Filter\Follows
+        arguments:
+            - '@app.bot.loader.follows'
+
+    app.bot.filter.keywords:
+        class: App\Bot\Filter\Keywords
+        arguments:
+            - '@app.bot.loader.keywords'
+
+    app.bot.filter.retweet_count:
+        class: App\Bot\Filter\RetweetCount
+
+    app.bot.filter.direct_message:
+        class: App\Bot\Filter\DirectMessage
+        arguments:
+            - '@app.bot.loader.direct_message'
+
+    # API endpoints
+    app.bot.api.search:
+        class: App\Bot\Api\Search
+
+    app.bot.api.thanks:
+        class: App\Bot\Api\Thanks
+        arguments:
+            - '@logger'
+            - '@app.bot.api.client'
+            - '@app.bot.api.upload'
+
+    app.bot.api.upload:
+        class: App\Bot\Api\Upload
+        arguments:
+            - '@logger'
+            - '@app.bot.api.client'
+            - '@app.bot.api.giphy.random'
+            - '@app.bot.api.upload.client'
+
+    app.bot.api.follow:
+        class: App\Bot\Api\Follow
+        arguments:
+            - '@logger'
+            - '@app.bot.api.client'
+            - '@app.bot.filter.follows'
+
+    app.bot.api.favorite:
+        class: App\Bot\Api\Favorite
+
+    app.bot.api.retweet:
+        class: App\Bot\Api\ReTweet
+
+    app.bot.api.application:
+        class: App\Bot\Api\Application
+
+    app.bot.api.unfollow:
+        class: App\Bot\Api\UnFollow
+
+    app.bot.api.direct_message:
+        class: App\Bot\Api\DirectMessage
+
+    app.bot.api.giphy.random:
+        class: App\Bot\Api\Giphy\Random
+        arguments:
+            - '@logger'
+            - '@app.bot.api.giphy.client'
+            - '%env(GIPHY_API_KEY)%'
+
+    # Rules
+    app.bot.rule.follow:
+        class: App\Bot\Rule\Follow
+        arguments: ['%twitter.rule.follow%']
+
+    app.bot.rule.favorite:
+        class: App\Bot\Rule\Favorite
+        arguments: ['%twitter.rule.favorite%']
+
+    app.bot.rule.thanks:
+        class: App\Bot\Rule\Thanks
+
+    app.bot.rule.retweet:
+        class: App\Bot\Rule\ReTweet
+
+    # Healths
+    app.bot.health.application:
+        class: App\Bot\Health\Application
+
+    app.bot.health.follows:
+        class: App\Bot\Health\Follows
+        arguments:
+            - '@logger'
+            - '@app.bot.api.unfollow'
+            - '@app.bot.filter.follows'
+
+    # Scans
+    app.bot.scan.contest:
+        class: App\Bot\Scan\Contest
+        arguments:
+            - '@logger'
+            - # filters
+                statuses: '@app.bot.filter.statuses'
+                retweet_count: '@app.bot.filter.retweet_count'
+                keywords: '@app.bot.filter.keywords'
+            - '@app.bot.api.search'
+
+    app.bot.scan.direct_message:
+        class: App\Bot\Scan\DirectMessage
+        arguments:
+            - '@logger'
+            - # filters
+                direct_message: '@app.bot.filter.direct_message'
+            - '@app.bot.api.direct_message'
+
+    # Aliases
+    GuzzleHttp\Client: '@app.bot.api.client'
