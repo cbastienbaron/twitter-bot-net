@@ -1,4 +1,5 @@
 {
+    "name": "cbastienbaron/twitter-bot-net",
     "type": "project",
     "license": "proprietary",
     "require": {
