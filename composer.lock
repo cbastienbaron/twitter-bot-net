@@ -1230,30 +1230,32 @@
         },
         {
             "name": "symfony/flex",
-            "version": "v1.0.79",
+            "version": "v1.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/flex.git",
-                "reference": "399e72968d5baa698788e6116fe0f47f269724e0"
+                "reference": "a53056880aae0ce034ac6c38906e162ee5cfd2df"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/flex/zipball/399e72968d5baa698788e6116fe0f47f269724e0",
-                "reference": "399e72968d5baa698788e6116fe0f47f269724e0",
+                "url": "https://api.github.com/repos/symfony/flex/zipball/a53056880aae0ce034ac6c38906e162ee5cfd2df",
+                "reference": "a53056880aae0ce034ac6c38906e162ee5cfd2df",
                 "shasum": ""
             },
             "require": {
                 "composer-plugin-api": "^1.0",
-                "php": "^7.0"
+                "php": ">=7.1"
             },
             "require-dev": {
                 "composer/composer": "^1.0.2",
-                "symfony/phpunit-bridge": "^3.2.8"
+                "symfony/dotenv": "^4.4|^5.0",
+                "symfony/phpunit-bridge": "^4.4|^5.0",
+                "symfony/process": "^4.4|^5.0"
             },
             "type": "composer-plugin",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.0-dev"
+                    "dev-master": "1.7-dev"
                 },
                 "class": "Symfony\\Flex\\Flex"
             },
@@ -1272,7 +1274,8 @@
                     "email": "fabien.potencier@gmail.com"
                 }
             ],
-            "time": "2018-04-27T05:19:26+00:00"
+            "description": "Composer plugin for Symfony",
+            "time": "2020-05-28T07:16:35+00:00"
         },
         {
             "name": "symfony/framework-bundle",
