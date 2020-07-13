@@ -6,7 +6,7 @@
         "php": "^7.1.8",
         "ext-iconv": "*",
         "guzzlehttp/guzzle": "^6.3",
-        "guzzlehttp/oauth-subscriber": "^0.3.0",
+        "guzzlehttp/oauth-subscriber": "^0.4.0",
         "symfony/console": "~4.0",
         "symfony/flex": "^1.0",
         "symfony/framework-bundle": "^4.0",
